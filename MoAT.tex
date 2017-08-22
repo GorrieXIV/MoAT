@@ -1,0 +1,847 @@
+\documentclass[11pt]{article}
+\usepackage[hmargin=20mm,vmargin=20mm]{geometry}
+\usepackage[round]{natbib}
+\usepackage{verbatim}
+\usepackage{graphicx}
+\newenvironment{code}{\footnotesize\verbatim}{\endverbatim\normalsize}
+
+%% ODER: format ==         = "\mathrel{==}"
+%% ODER: format /=         = "\neq "
+%
+%
+\makeatletter
+\@ifundefined{lhs2tex.lhs2tex.sty.read}%
+  {\@namedef{lhs2tex.lhs2tex.sty.read}{}%
+   \newcommand\SkipToFmtEnd{}%
+   \newcommand\EndFmtInput{}%
+   \long\def\SkipToFmtEnd#1\EndFmtInput{}%
+  }\SkipToFmtEnd
+
+\newcommand\ReadOnlyOnce[1]{\@ifundefined{#1}{\@namedef{#1}{}}\SkipToFmtEnd}
+\usepackage{amstext}
+\usepackage{amssymb}
+\usepackage{stmaryrd}
+\DeclareFontFamily{OT1}{cmtex}{}
+\DeclareFontShape{OT1}{cmtex}{m}{n}
+  {<5><6><7><8>cmtex8
+   <9>cmtex9
+   <10><10.95><12><14.4><17.28><20.74><24.88>cmtex10}{}
+\DeclareFontShape{OT1}{cmtex}{m}{it}
+  {<-> ssub * cmtt/m/it}{}
+\newcommand{\texfamily}{\fontfamily{cmtex}\selectfont}
+\DeclareFontShape{OT1}{cmtt}{bx}{n}
+  {<5><6><7><8>cmtt8
+   <9>cmbtt9
+   <10><10.95><12><14.4><17.28><20.74><24.88>cmbtt10}{}
+\DeclareFontShape{OT1}{cmtex}{bx}{n}
+  {<-> ssub * cmtt/bx/n}{}
+\newcommand{\tex}[1]{\text{\texfamily#1}}	% NEU
+
+\newcommand{\Sp}{\hskip.33334em\relax}
+
+
+\newcommand{\Conid}[1]{\mathit{#1}}
+\newcommand{\Varid}[1]{\mathit{#1}}
+\newcommand{\anonymous}{\kern0.06em \vbox{\hrule\@width.5em}}
+\newcommand{\plus}{\mathbin{+\!\!\!+}}
+\newcommand{\bind}{\mathbin{>\!\!\!>\mkern-6.7mu=}}
+\newcommand{\rbind}{\mathbin{=\mkern-6.7mu<\!\!\!<}}% suggested by Neil Mitchell
+\newcommand{\sequ}{\mathbin{>\!\!\!>}}
+\renewcommand{\leq}{\leqslant}
+\renewcommand{\geq}{\geqslant}
+\usepackage{polytable}
+
+%mathindent has to be defined
+\@ifundefined{mathindent}%
+  {\newdimen\mathindent\mathindent\leftmargini}%
+  {}%
+
+\def\resethooks{%
+  \global\let\SaveRestoreHook\empty
+  \global\let\ColumnHook\empty}
+\newcommand*{\savecolumns}[1][default]%
+  {\g@addto@macro\SaveRestoreHook{\savecolumns[#1]}}
+\newcommand*{\restorecolumns}[1][default]%
+  {\g@addto@macro\SaveRestoreHook{\restorecolumns[#1]}}
+\newcommand*{\aligncolumn}[2]%
+  {\g@addto@macro\ColumnHook{\column{#1}{#2}}}
+
+\resethooks
+
+\newcommand{\onelinecommentchars}{\quad-{}- }
+\newcommand{\commentbeginchars}{\enskip\{-}
+\newcommand{\commentendchars}{-\}\enskip}
+
+\newcommand{\visiblecomments}{%
+  \let\onelinecomment=\onelinecommentchars
+  \let\commentbegin=\commentbeginchars
+  \let\commentend=\commentendchars}
+
+\newcommand{\invisiblecomments}{%
+  \let\onelinecomment=\empty
+  \let\commentbegin=\empty
+  \let\commentend=\empty}
+
+\visiblecomments
+
+\newlength{\blanklineskip}
+\setlength{\blanklineskip}{0.66084ex}
+
+\newcommand{\hsindent}[1]{\quad}% default is fixed indentation
+\let\hspre\empty
+\let\hspost\empty
+\newcommand{\NB}{\textbf{NB}}
+\newcommand{\Todo}[1]{$\langle$\textbf{To do:}~#1$\rangle$}
+
+\EndFmtInput
+\makeatother
+%
+%
+%
+%
+%
+%
+% This package provides two environments suitable to take the place
+% of hscode, called "plainhscode" and "arrayhscode". 
+%
+% The plain environment surrounds each code block by vertical space,
+% and it uses \abovedisplayskip and \belowdisplayskip to get spacing
+% similar to formulas. Note that if these dimensions are changed,
+% the spacing around displayed math formulas changes as well.
+% All code is indented using \leftskip.
+%
+% Changed 19.08.2004 to reflect changes in colorcode. Should work with
+% CodeGroup.sty.
+%
+\ReadOnlyOnce{polycode.fmt}%
+\makeatletter
+
+\newcommand{\hsnewpar}[1]%
+  {{\parskip=0pt\parindent=0pt\par\vskip #1\noindent}}
+
+% can be used, for instance, to redefine the code size, by setting the
+% command to \small or something alike
+\newcommand{\hscodestyle}{}
+
+% The command \sethscode can be used to switch the code formatting
+% behaviour by mapping the hscode environment in the subst directive
+% to a new LaTeX environment.
+
+\newcommand{\sethscode}[1]%
+  {\expandafter\let\expandafter\hscode\csname #1\endcsname
+   \expandafter\let\expandafter\endhscode\csname end#1\endcsname}
+
+% "compatibility" mode restores the non-polycode.fmt layout.
+
+\newenvironment{compathscode}%
+  {\par\noindent
+   \advance\leftskip\mathindent
+   \hscodestyle
+   \let\\=\@normalcr
+   \let\hspre\(\let\hspost\)%
+   \pboxed}%
+  {\endpboxed\)%
+   \par\noindent
+   \ignorespacesafterend}
+
+\newcommand{\compaths}{\sethscode{compathscode}}
+
+% "plain" mode is the proposed default.
+% It should now work with \centering.
+% This required some changes. The old version
+% is still available for reference as oldplainhscode.
+
+\newenvironment{plainhscode}%
+  {\hsnewpar\abovedisplayskip
+   \advance\leftskip\mathindent
+   \hscodestyle
+   \let\hspre\(\let\hspost\)%
+   \pboxed}%
+  {\endpboxed%
+   \hsnewpar\belowdisplayskip
+   \ignorespacesafterend}
+
+\newenvironment{oldplainhscode}%
+  {\hsnewpar\abovedisplayskip
+   \advance\leftskip\mathindent
+   \hscodestyle
+   \let\\=\@normalcr
+   \(\pboxed}%
+  {\endpboxed\)%
+   \hsnewpar\belowdisplayskip
+   \ignorespacesafterend}
+
+% Here, we make plainhscode the default environment.
+
+\newcommand{\plainhs}{\sethscode{plainhscode}}
+\newcommand{\oldplainhs}{\sethscode{oldplainhscode}}
+\plainhs
+
+% The arrayhscode is like plain, but makes use of polytable's
+% parray environment which disallows page breaks in code blocks.
+
+\newenvironment{arrayhscode}%
+  {\hsnewpar\abovedisplayskip
+   \advance\leftskip\mathindent
+   \hscodestyle
+   \let\\=\@normalcr
+   \(\parray}%
+  {\endparray\)%
+   \hsnewpar\belowdisplayskip
+   \ignorespacesafterend}
+
+\newcommand{\arrayhs}{\sethscode{arrayhscode}}
+
+% The mathhscode environment also makes use of polytable's parray 
+% environment. It is supposed to be used only inside math mode 
+% (I used it to typeset the type rules in my thesis).
+
+\newenvironment{mathhscode}%
+  {\parray}{\endparray}
+
+\newcommand{\mathhs}{\sethscode{mathhscode}}
+
+% texths is similar to mathhs, but works in text mode.
+
+\newenvironment{texthscode}%
+  {\(\parray}{\endparray\)}
+
+\newcommand{\texths}{\sethscode{texthscode}}
+
+% The framed environment places code in a framed box.
+
+\def\codeframewidth{\arrayrulewidth}
+\RequirePackage{calc}
+
+\newenvironment{framedhscode}%
+  {\parskip=\abovedisplayskip\par\noindent
+   \hscodestyle
+   \arrayrulewidth=\codeframewidth
+   \tabular{@{}|p{\linewidth-2\arraycolsep-2\arrayrulewidth-2pt}|@{}}%
+   \hline\framedhslinecorrect\\{-1.5ex}%
+   \let\endoflinesave=\\
+   \let\\=\@normalcr
+   \(\pboxed}%
+  {\endpboxed\)%
+   \framedhslinecorrect\endoflinesave{.5ex}\hline
+   \endtabular
+   \parskip=\belowdisplayskip\par\noindent
+   \ignorespacesafterend}
+
+\newcommand{\framedhslinecorrect}[2]%
+  {#1[#2]}
+
+\newcommand{\framedhs}{\sethscode{framedhscode}}
+
+% The inlinehscode environment is an experimental environment
+% that can be used to typeset displayed code inline.
+
+\newenvironment{inlinehscode}%
+  {\(\def\column##1##2{}%
+   \let\>\undefined\let\<\undefined\let\\\undefined
+   \newcommand\>[1][]{}\newcommand\<[1][]{}\newcommand\\[1][]{}%
+   \def\fromto##1##2##3{##3}%
+   \def\nextline{}}{\) }%
+
+\newcommand{\inlinehs}{\sethscode{inlinehscode}}
+
+% The joincode environment is a separate environment that
+% can be used to surround and thereby connect multiple code
+% blocks.
+
+\newenvironment{joincode}%
+  {\let\orighscode=\hscode
+   \let\origendhscode=\endhscode
+   \def\endhscode{\def\hscode{\endgroup\def\@currenvir{hscode}\\}\begingroup}
+   %\let\SaveRestoreHook=\empty
+   %\let\ColumnHook=\empty
+   %\let\resethooks=\empty
+   \orighscode\def\hscode{\endgroup\def\@currenvir{hscode}}}%
+  {\origendhscode
+   \global\let\hscode=\orighscode
+   \global\let\endhscode=\origendhscode}%
+
+\makeatother
+\EndFmtInput
+%
+
+% Better for literate programs:
+\setlength\parindent{24pt}
+\parskip=0.5ex
+
+\usepackage{hyperref} % put this always immediatedly before \begin{document}!
+\begin{document}
+
+\begin{center}
+\Large{Method of Analytic Tableaux In Haskell}\\
+\normalsize {Robert Gorrie -- McMaster University -- \today}\\
+\end{center}
+\hline
+\pagenumbering{arabic}
+
+\section{Introduction}
+The following document outlines in detail a Haskell implementation of the Method of Analytic Tableaux. The method in question is a technique and a proof procedure used for checking the validity of a propositional formula. Truthfully, the procedure is a general one, and applies to many different types of logics. The following implementation is, however, only defined over basic propositional logic.
+
+This document is organized as follows. In the first section we offer a brief summary of the Method of Analytic Tableaux; for readers who already understand the procedure, we advise against skipping this section as some of the terminology used will be integral to forthcoming sections. In the following section we introduce our datatypes and functions for defining, building, and interfacing with propositional formulas. Lastly, in the remaining section we build our implementation of the Tableaux method from the ground up, while introducing a new collection interconnected functions.\\\\
+This document assumes a beginner level of Haskell comprehension.
+
+\section{Tableaux Method in Brief}
+
+The method is rather simple, and we will attempt to make this as quick and painless as possible.
+
+Abstractedly, the procedure works by decomposing a given formula using a set of rules. These decompositions produce a tree structure in which each leaf is a propositional symbol with an assignment of TRUE or FALSE.
+
+Direct your attention to the figure immediately below. Each operator either splits the tree ($\lor$) or pairs child elements together ($\land$) and is affected by whether a NOT ($\neg$) is applied to the whole of the operation.
+\begin{center}
+\includegraphics[width=100mm]{TabRules.png}
+\end{center}
+We will now turn to the following example which will (hopefully) clarify the procedure. In it we consider the propositional formula $(p \land q) \Rightarrow q$ which is a clear tautology.
+\begin{center}
+\includegraphics[width=100mm]{diagram.png}
+\end{center}
+We first apply the 'Implies' rule, splitting the tree, then on the left side we apply the 'Not And' rule, splitting the tree again.\\
+
+Let us denote a function $t$ which takes a single formula as a parameter and outputs a list for every subtree.\\
+\begin{center}
+Let $F = (p \land q) \Rightarrow q$\\
+Taking $t (F)$ we get [$\neg p$], [$\neg q$], and [$q$]\\
+\end{center}
+The final step of the procedure is then to check the subtrees for contradictions. Because we only have splits ($\lor$) and no pairs ($\land$) we are left with the subtrees [$\neg p$], [$\neg q$], and [$q$], each subtree is free of contradictions. If we started with $\neg$(\_ $\Rightarrow$ \_) (instead of (\_ $\Rightarrow$ \_)), we would have resulted with [$p$,$q$,$\neg q$] as our only subtree, which houses a contradiction.\\
+If ALL of the produced subtrees possess a contradiction, then the NEGATION of the original formula is valid. Noting this we can confirm that $\neg F$ is valid.
+
+\setlength\parindent{0pt}
+
+\section{Form Data Type}
+
+The following section and corresponding module details a data type for expressing propositional formulae. Much of this section is borrowed from or inspired by Dr. Wolfram Kahl's 'Expr' module. 
+
+\begin{hscode}\SaveRestoreHook
+\column{B}{@{}>{\hspre}l<{\hspost}@{}}%
+\column{E}{@{}>{\hspre}l<{\hspost}@{}}%
+\>[B]{}\mathbf{module}\;\Conid{Form}\;\mathbf{where}{}\<[E]%
+\ColumnHook
+\end{hscode}\resethooks
+
+First we build a free type representing the possible binary operators over propositional formulae. An equivalence operator, 'Equiv', is included for usability's sake, and is not required.
+
+\begin{hscode}\SaveRestoreHook
+\column{B}{@{}>{\hspre}l<{\hspost}@{}}%
+\column{E}{@{}>{\hspre}l<{\hspost}@{}}%
+\>[B]{}\mathbf{data}\;\Conid{BinOp}\mathrel{=}\Conid{Implies}\mid \Conid{Or}\mid \Conid{And}\mid \Conid{Equiv}{}\<[E]%
+\ColumnHook
+\end{hscode}\resethooks
+
+A formula is then one of the following: a propositional symbol (denoted by a single Char), the negation of a formula, or the application of a binary operator applied to two subformula.
+
+\begin{hscode}\SaveRestoreHook
+\column{B}{@{}>{\hspre}l<{\hspost}@{}}%
+\column{11}{@{}>{\hspre}l<{\hspost}@{}}%
+\column{E}{@{}>{\hspre}l<{\hspost}@{}}%
+\>[B]{}\mathbf{data}\;\Conid{Form}\mathrel{=}\Conid{P}\;\Conid{Char}{}\<[E]%
+\\
+\>[B]{}\hsindent{11}{}\<[11]%
+\>[11]{}\mid \Conid{Not}\;\Conid{Form}{}\<[E]%
+\\
+\>[B]{}\hsindent{11}{}\<[11]%
+\>[11]{}\mid \Conid{Bin}\;\Conid{BinOp}\;\Conid{Form}\;\Conid{Form}{}\<[E]%
+\ColumnHook
+\end{hscode}\resethooks
+
+\subsection{Interfacing with Form}
+
+We can represent the following formulas using our type:
+\begin{center}
+$\neg p \land p$\\
+$(p \land q) \Rightarrow q$\\
+$\neg (A \Rightarrow B) \Leftrightarrow (\neg B \Rightarrow \neg A)$\\
+$\neg ((A \Rightarrow B) \lor (B \Rightarrow A))$
+\end{center}
+They are, in order, as follows:
+
+\begin{hscode}\SaveRestoreHook
+\column{B}{@{}>{\hspre}l<{\hspost}@{}}%
+\column{17}{@{}>{\hspre}l<{\hspost}@{}}%
+\column{E}{@{}>{\hspre}l<{\hspost}@{}}%
+\>[B]{}\Varid{f1},\Varid{f2},\Varid{f3},\Varid{f4}{}\<[17]%
+\>[17]{}\mathbin{::}\Conid{Form}{}\<[E]%
+\\
+\>[B]{}\Varid{f1}\mathrel{=}\Conid{Bin}\;\Conid{And}\;(\Conid{Not}\;(\Conid{P}\;\text{\tt 'p'}))\;(\Conid{P}\;\text{\tt 'p'}){}\<[E]%
+\\
+\>[B]{}\Varid{f2}\mathrel{=}\Conid{Bin}\;\Conid{Implies}\;(\Conid{Bin}\;\Conid{And}\;(\Conid{P}\;\text{\tt 'p'})\;(\Conid{P}\;\text{\tt 'q'}))\;(\Conid{P}\;\text{\tt 'q'}){}\<[E]%
+\\
+\>[B]{}\Varid{f3}\mathrel{=}\Conid{Not}\;(\Conid{Bin}\;\Conid{Equiv}\;(\Conid{Bin}\;\Conid{Implies}\;(\Conid{P}\;\text{\tt 'A'})\;(\Conid{P}\;\text{\tt 'B'}))\;(\Conid{Bin}\;\Conid{Implies}\;(\Conid{Not}\;(\Conid{P}\;\text{\tt 'B'}))\;(\Conid{Not}\;(\Conid{P}\;\text{\tt 'A'})))){}\<[E]%
+\\
+\>[B]{}\Varid{f4}\mathrel{=}\Conid{Not}\;(\Conid{Bin}\;\Conid{Or}\;(\Conid{Bin}\;\Conid{Implies}\;(\Conid{P}\;\text{\tt 'A'})\;(\Conid{P}\;\text{\tt 'B'}))\;(\Conid{Bin}\;\Conid{Implies}\;(\Conid{P}\;\text{\tt 'B'})\;(\Conid{P}\;\text{\tt 'A'}))){}\<[E]%
+\ColumnHook
+\end{hscode}\resethooks
+
+Note that f1, f3, and f4 are tautologies, and f2 is the same $F$ mentioned in the previous section.\\
+
+The following is a function which returns the string representation of the offered formula.
+
+\begin{hscode}\SaveRestoreHook
+\column{B}{@{}>{\hspre}l<{\hspost}@{}}%
+\column{26}{@{}>{\hspre}l<{\hspost}@{}}%
+\column{E}{@{}>{\hspre}l<{\hspost}@{}}%
+\>[B]{}\Varid{showForm}\mathbin{::}\Conid{Form}\to \Conid{ShowS}{}\<[E]%
+\\
+\>[B]{}\Varid{showForm}\;(\Conid{P}\;\Varid{p})\mathrel{=}(\Varid{p}\mathbin{:}){}\<[E]%
+\\
+\>[B]{}\Varid{showForm}\;(\Conid{Not}\;\Varid{f})\mathrel{=}(\text{\tt '\char126 '}\mathbin{:})\mathbin{\circ}(\text{\tt '('}\mathbin{:})\mathbin{\circ}\Varid{showForm}\;\Varid{f}\mathbin{\circ}(\text{\tt ')'}\mathbin{:}){}\<[E]%
+\\
+\>[B]{}\Varid{showForm}\;(\Conid{Bin}\;\Varid{op}\;\Varid{f1}\;\Varid{f2}){}\<[26]%
+\>[26]{}\mathrel{=}(\text{\tt '('}\mathbin{:})\mathbin{\circ}\Varid{showForm}\;\Varid{f1}\mathbin{\circ}\Varid{showOp}\;\Varid{op}\mathbin{\circ}\Varid{showForm}\;\Varid{f2}\mathbin{\circ}(\text{\tt ')'}\mathbin{:}){}\<[E]%
+\\[\blanklineskip]%
+\>[B]{}\Varid{showOp}\mathbin{::}\Conid{BinOp}\to \Conid{ShowS}{}\<[E]%
+\\
+\>[B]{}\Varid{showOp}\;\Conid{Implies}\mathrel{=}(\text{\tt \char34 ~=>~\char34}\plus ){}\<[E]%
+\\
+\>[B]{}\Varid{showOp}\;\Conid{Or}\mathrel{=}(\text{\tt \char34 ~|~\char34}\plus ){}\<[E]%
+\\
+\>[B]{}\Varid{showOp}\;\Conid{And}\mathrel{=}(\text{\tt \char34 ~\&~\char34}\plus ){}\<[E]%
+\\
+\>[B]{}\Varid{showOp}\;\Conid{Equiv}\mathrel{=}(\text{\tt \char34 ~==~\char34}\plus ){}\<[E]%
+\ColumnHook
+\end{hscode}\resethooks
+
+ShowS is used for efficiencies sake (a simple recursive concatination yields quadratic complexity). Because ShowS is itself a function from String to String, we provide showF which calls showForm with an empty list, yielding the appropriate String.
+
+\begin{hscode}\SaveRestoreHook
+\column{B}{@{}>{\hspre}l<{\hspost}@{}}%
+\column{E}{@{}>{\hspre}l<{\hspost}@{}}%
+\>[B]{}\Varid{showF}\mathbin{::}\Conid{Form}\to \Conid{String}{}\<[E]%
+\\
+\>[B]{}\Varid{showF}\;\Varid{f}\mathrel{=}\Varid{showForm}\;\Varid{f}\;[\mskip1.5mu \mskip1.5mu]{}\<[E]%
+\ColumnHook
+\end{hscode}\resethooks
+
+You can test this module by first loading it in GHCI (":l Form.lhs") and then calling showF on one of f1, f2, f3, f4.
+
+Additionally, you can define your own propositions using the constructor rules of Form ("let f = Not (Bin Or ...)", etc).
+\section{Analytic Tableaux Implementation}
+
+The following section and module document the implementation of the Method of Analytic Tableaux. This is done through the application of Haskell functions to elements of type Form.
+
+\begin{hscode}\SaveRestoreHook
+\column{B}{@{}>{\hspre}l<{\hspost}@{}}%
+\column{E}{@{}>{\hspre}l<{\hspost}@{}}%
+\>[B]{}\mathbf{module}\;\Conid{Tableaux}\;\mathbf{where}{}\<[E]%
+\\
+\>[B]{}\mathbf{import}\;\Conid{Form}{}\<[E]%
+\ColumnHook
+\end{hscode}\resethooks
+
+The following "Form Tree" type represents the tree structure that is given by applying the decomposition rules (section 2) to a form. We will need to define some function for taking Form to FTree.
+
+\begin{hscode}\SaveRestoreHook
+\column{B}{@{}>{\hspre}l<{\hspost}@{}}%
+\column{E}{@{}>{\hspre}l<{\hspost}@{}}%
+\>[B]{}\mathbf{data}\;\Conid{FTree}\mathrel{=}\Conid{Pair}\;\Conid{FTree}\;\Conid{FTree}\mid \Conid{Split}\;\Conid{FTree}\;\Conid{FTree}\mid \Conid{Leaf}\;(\Conid{Char},\Conid{Bool}){}\<[E]%
+\ColumnHook
+\end{hscode}\resethooks
+
+
+We will now begin introducing functions. We will start from the highest level of abstraction, and proceed to introduce functions as they are needed.
+
+Our first function is simple. It evaluates the validity of a Form. We know that we need to compute an FTree given our input, which we will then evaluate to test for validity. We feed our input Form 'f' to some function genFTree, and feed the output to some function evalTree.
+
+\begin{hscode}\SaveRestoreHook
+\column{B}{@{}>{\hspre}l<{\hspost}@{}}%
+\column{E}{@{}>{\hspre}l<{\hspost}@{}}%
+\>[B]{}\Varid{evalForm}\mathbin{::}\Conid{Form}\to \Conid{Bool}{}\<[E]%
+\\
+\>[B]{}\Varid{evalForm}\;\Varid{f}\mathrel{=}(\Varid{evalTree}\;(\Varid{genFTree}\;\Varid{f})\;[\mskip1.5mu \mskip1.5mu]){}\<[E]%
+\ColumnHook
+\end{hscode}\resethooks
+
+Don't be confused by the empty list applied to evalTree; it is a recursive parameter for the function and will be clarified shortly.\\
+
+We now present genFTree, taking Form to FTree. genFTree works inductively over the structure of Form. There is a case for every possible occurance of a binary operator, as well as one for each operator when paired with a NOT.
+Each recursive case corresponds to a rule from figure 2.1. Recall splits ($\lor$) and pairs ($\land$) as discussed previously.
+
+\begin{hscode}\SaveRestoreHook
+\column{B}{@{}>{\hspre}l<{\hspost}@{}}%
+\column{3}{@{}>{\hspre}l<{\hspost}@{}}%
+\column{5}{@{}>{\hspre}l<{\hspost}@{}}%
+\column{9}{@{}>{\hspre}l<{\hspost}@{}}%
+\column{12}{@{}>{\hspre}l<{\hspost}@{}}%
+\column{14}{@{}>{\hspre}l<{\hspost}@{}}%
+\column{17}{@{}>{\hspre}l<{\hspost}@{}}%
+\column{E}{@{}>{\hspre}l<{\hspost}@{}}%
+\>[B]{}\Varid{genFTree}\mathbin{::}\Conid{Form}\to \Conid{FTree}{}\<[E]%
+\\
+\>[B]{}\Varid{genFTree}\;(\Conid{P}\;\Varid{v})\mathrel{=}\Conid{Leaf}\;(\Varid{v},\Conid{True}){}\<[E]%
+\\
+\>[B]{}\Varid{genFTree}\;(\Conid{Not}\;\Varid{f})\mathrel{=}\mathbf{case}\;\Varid{f}\;\mathbf{of}{}\<[E]%
+\\
+\>[B]{}\hsindent{3}{}\<[3]%
+\>[3]{}\Conid{Not}\;\Varid{f'}{}\<[17]%
+\>[17]{}\to \Varid{genFTree}\;\Varid{f'}{}\<[E]%
+\\
+\>[B]{}\hsindent{3}{}\<[3]%
+\>[3]{}\Conid{P}\;\Varid{v}{}\<[9]%
+\>[9]{}\to \Conid{Leaf}\;(\Varid{v},\Conid{False}){}\<[E]%
+\\
+\>[B]{}\hsindent{3}{}\<[3]%
+\>[3]{}\Conid{Bin}\;\Varid{op}\;\Varid{f1}\;\Varid{f2}\to \mathbf{case}\;\Varid{op}\;\mathbf{of}{}\<[E]%
+\\
+\>[3]{}\hsindent{2}{}\<[5]%
+\>[5]{}\Conid{And}\to \Conid{Split}\;(\Varid{genFTree}\;(\Conid{Not}\;\Varid{f1}))\;(\Varid{genFTree}\;(\Conid{Not}\;\Varid{f2})){}\<[E]%
+\\
+\>[3]{}\hsindent{2}{}\<[5]%
+\>[5]{}\Conid{Or}{}\<[9]%
+\>[9]{}\to \Conid{Pair}\;(\Varid{genFTree}\;(\Conid{Not}\;\Varid{f1}))\;(\Varid{genFTree}\;(\Conid{Not}\;\Varid{f2})){}\<[E]%
+\\
+\>[3]{}\hsindent{2}{}\<[5]%
+\>[5]{}\Conid{Implies}\to \Conid{Pair}\;(\Varid{genFTree}\;\Varid{f1})\;(\Varid{genFTree}\;(\Conid{Not}\;\Varid{f2})){}\<[E]%
+\\
+\>[3]{}\hsindent{2}{}\<[5]%
+\>[5]{}\Conid{Equiv}\to \Conid{Split}{}\<[E]%
+\\
+\>[5]{}\hsindent{9}{}\<[14]%
+\>[14]{}(\Conid{Pair}\;(\Varid{genFTree}\;(\Conid{Not}\;\Varid{f1}))\;(\Varid{genFTree}\;\Varid{f2})){}\<[E]%
+\\
+\>[5]{}\hsindent{9}{}\<[14]%
+\>[14]{}(\Conid{Pair}\;(\Varid{genFTree}\;\Varid{f1})\;(\Varid{genFTree}\;(\Conid{Not}\;\Varid{f2}))){}\<[E]%
+\\
+\>[B]{}\Varid{genFTree}\;(\Conid{Bin}\;\Varid{op}\;\Varid{f1}\;\Varid{f2})\mathrel{=}\mathbf{case}\;\Varid{op}\;\mathbf{of}{}\<[E]%
+\\
+\>[B]{}\hsindent{3}{}\<[3]%
+\>[3]{}\Conid{And}\to \Conid{Pair}\;(\Varid{genFTree}\;\Varid{f1})\;(\Varid{genFTree}\;\Varid{f2}){}\<[E]%
+\\
+\>[B]{}\hsindent{3}{}\<[3]%
+\>[3]{}\Conid{Or}\to \Conid{Split}\;(\Varid{genFTree}\;\Varid{f1})\;(\Varid{genFTree}\;\Varid{f2}){}\<[E]%
+\\
+\>[B]{}\hsindent{3}{}\<[3]%
+\>[3]{}\Conid{Implies}\to \Conid{Split}\;(\Varid{genFTree}\;(\Conid{Not}\;\Varid{f1}))\;(\Varid{genFTree}\;\Varid{f2}){}\<[E]%
+\\
+\>[B]{}\hsindent{3}{}\<[3]%
+\>[3]{}\Conid{Equiv}\to \Conid{Split}{}\<[E]%
+\\
+\>[3]{}\hsindent{9}{}\<[12]%
+\>[12]{}(\Conid{Pair}\;(\Varid{genFTree}\;\Varid{f1})\;(\Varid{genFTree}\;\Varid{f2})){}\<[E]%
+\\
+\>[3]{}\hsindent{9}{}\<[12]%
+\>[12]{}(\Conid{Pair}\;(\Varid{genFTree}\;(\Conid{Not}\;\Varid{f1}))\;(\Varid{genFTree}\;(\Conid{Not}\;\Varid{f2}))){}\<[E]%
+\ColumnHook
+\end{hscode}\resethooks
+
+The following Branch datatype represents the return type of the function $t$ mentioned in section 2. Note that it is a list of (Char,Bool). Each pair holds a propositional symbol with its evaluation as computed by genFTree.
+It takes a list of Branches to properly describe an entire FTree, as a Branch is equivalent to one subtree.
+
+\begin{hscode}\SaveRestoreHook
+\column{B}{@{}>{\hspre}l<{\hspost}@{}}%
+\column{E}{@{}>{\hspre}l<{\hspost}@{}}%
+\>[B]{}\mathbf{type}\;\Conid{Branch}\mathrel{=}[\mskip1.5mu (\Conid{Char},\Conid{Bool})\mskip1.5mu]{}\<[E]%
+\ColumnHook
+\end{hscode}\resethooks
+
+The upcoming (dense and girthy) function, evalTree, was what we conceptualized in evalForm when we said there would be some function to evaluate the validity of some Form based on its FTree. The function takes an FTree and returns a Bool (denoting validity).
+
+This function is defined inductively over the structure of FTree. It works by adding propositional variables from the FTree into a Branch as it encounters them. This Branch is our second parameter (recall the empty list in evalForm). 
+
+Once the FTree has been followed all the way to its leaves, some function evalBranch is called to evaluate the built up Branch, which is where the return type Bool comes from. evalBranch, once we write it, will correspond to checking a Branch ($t$ output) for contradictions.
+
+When evalTree encounters a Pair ($\land$), it puts the two children into the same Branch. If it encounters a Split ($\lor$), it calls evalTree twice, signifying two seperate Branches. The one exception to this simple scheme lies wherein a Pair is encountered in which both of it's children are Pairs. When this happens we OR four evalTree instances, corresponding to all the possible combinations of children; if a contradiction is found between any of them then a contradiction is found in the original Pair.
+
+\begin{hscode}\SaveRestoreHook
+\column{B}{@{}>{\hspre}l<{\hspost}@{}}%
+\column{3}{@{}>{\hspre}l<{\hspost}@{}}%
+\column{17}{@{}>{\hspre}l<{\hspost}@{}}%
+\column{18}{@{}>{\hspre}l<{\hspost}@{}}%
+\column{32}{@{}>{\hspre}l<{\hspost}@{}}%
+\column{34}{@{}>{\hspre}l<{\hspost}@{}}%
+\column{E}{@{}>{\hspre}l<{\hspost}@{}}%
+\>[B]{}\Varid{evalTree}\mathbin{::}\Conid{FTree}\to \Conid{Branch}\to \Conid{Bool}{}\<[E]%
+\\
+\>[B]{}\Varid{evalTree}\;(\Conid{Pair}\;\Varid{f}\;\Varid{t})\;\Varid{b}{}\<[E]%
+\\
+\>[B]{}\hsindent{3}{}\<[3]%
+\>[3]{}\mid (\Varid{isLeaf}\;\Varid{f})\mathrel{\wedge}(\Varid{isLeaf}\;\Varid{t})\mathrel{=}\Varid{evalBranch}\;((\Varid{peelLeaf}\;\Varid{f})\mathbin{:}(\Varid{peelLeaf}\;\Varid{t})\mathbin{:}\Varid{b}){}\<[E]%
+\\
+\>[B]{}\hsindent{3}{}\<[3]%
+\>[3]{}\mid (\Varid{isLeaf}\;\Varid{f})\mathrel{=}\Varid{evalTree}\;\Varid{t}\;((\Varid{peelLeaf}\;\Varid{f})\mathbin{:}\Varid{b}){}\<[E]%
+\\
+\>[B]{}\hsindent{3}{}\<[3]%
+\>[3]{}\mid (\Varid{isLeaf}\;\Varid{t})\mathrel{=}\Varid{evalTree}\;\Varid{f}\;((\Varid{peelLeaf}\;\Varid{t})\mathbin{:}\Varid{b}){}\<[E]%
+\\
+\>[B]{}\hsindent{3}{}\<[3]%
+\>[3]{}\mid (\Varid{isPair}\;\Varid{f})\mathrel{\wedge}(\Varid{isPair}\;\Varid{t})\mathrel{=}(\Varid{evalTree}\;(\Conid{Pair}\;(\Varid{digLeft}\;\Varid{f})\;(\Varid{digLeft}\;\Varid{t}))\;\Varid{b})\mathrel{\vee}{}\<[E]%
+\\
+\>[3]{}\hsindent{29}{}\<[32]%
+\>[32]{}(\Varid{evalTree}\;(\Conid{Pair}\;(\Varid{digLeft}\;\Varid{f})\;(\Varid{digRight}\;\Varid{t}))\;\Varid{b})\mathrel{\vee}{}\<[E]%
+\\
+\>[3]{}\hsindent{29}{}\<[32]%
+\>[32]{}(\Varid{evalTree}\;(\Conid{Pair}\;(\Varid{digRight}\;\Varid{f})\;(\Varid{digLeft}\;\Varid{t}))\;\Varid{b})\mathrel{\vee}{}\<[E]%
+\\
+\>[3]{}\hsindent{29}{}\<[32]%
+\>[32]{}(\Varid{evalTree}\;(\Conid{Pair}\;(\Varid{digRight}\;\Varid{f})\;(\Varid{digRight}\;\Varid{t}))\;\Varid{b}){}\<[E]%
+\\
+\>[B]{}\hsindent{3}{}\<[3]%
+\>[3]{}\mid (\Varid{isSplit}\;\Varid{f})\mathrel{\wedge}(\Varid{isSplit}\;\Varid{t})\mathrel{=}(\Varid{evalTree}\;(\Conid{Pair}\;(\Varid{digLeft}\;\Varid{f})\;(\Varid{digLeft}\;\Varid{t}))\;\Varid{b})\mathrel{\wedge}{}\<[E]%
+\\
+\>[3]{}\hsindent{31}{}\<[34]%
+\>[34]{}(\Varid{evalTree}\;(\Conid{Pair}\;(\Varid{digLeft}\;\Varid{f})\;(\Varid{digRight}\;\Varid{t}))\;\Varid{b})\mathrel{\wedge}{}\<[E]%
+\\
+\>[3]{}\hsindent{31}{}\<[34]%
+\>[34]{}(\Varid{evalTree}\;(\Conid{Pair}\;(\Varid{digRight}\;\Varid{f})\;(\Varid{digLeft}\;\Varid{t}))\;\Varid{b})\mathrel{\wedge}{}\<[E]%
+\\
+\>[3]{}\hsindent{31}{}\<[34]%
+\>[34]{}(\Varid{evalTree}\;(\Conid{Pair}\;(\Varid{digRight}\;\Varid{f})\;(\Varid{digRight}\;\Varid{t}))\;\Varid{b}){}\<[E]%
+\\
+\>[B]{}\hsindent{3}{}\<[3]%
+\>[3]{}\mid (\Varid{isPair}\;\Varid{f})\mathrel{=}(\Varid{evalTree}\;(\Conid{Pair}\;\Varid{f}\;(\Varid{digLeft}\;\Varid{t}))\;\Varid{b})\mathrel{\wedge}{}\<[E]%
+\\
+\>[3]{}\hsindent{15}{}\<[18]%
+\>[18]{}(\Varid{evalTree}\;(\Conid{Pair}\;\Varid{f}\;(\Varid{digRight}\;\Varid{t}))\;\Varid{b}){}\<[E]%
+\\
+\>[B]{}\hsindent{3}{}\<[3]%
+\>[3]{}\mid \Varid{otherwise}\mathrel{=}(\Varid{evalTree}\;(\Conid{Pair}\;\Varid{t}\;(\Varid{digLeft}\;\Varid{f}))\;\Varid{b})\mathrel{\wedge}{}\<[E]%
+\\
+\>[3]{}\hsindent{14}{}\<[17]%
+\>[17]{}(\Varid{evalTree}\;(\Conid{Pair}\;\Varid{t}\;(\Varid{digRight}\;\Varid{f}))\;\Varid{b}){}\<[E]%
+\\
+\>[B]{}\Varid{evalTree}\;(\Conid{Split}\;\Varid{f}\;\Varid{t})\;\Varid{b}{}\<[E]%
+\\
+\>[B]{}\hsindent{3}{}\<[3]%
+\>[3]{}\mid (\Varid{isLeaf}\;\Varid{f})\mathrel{\wedge}(\Varid{isLeaf}\;\Varid{t})\mathrel{=}\Varid{evalBranch}\;((\Varid{peelLeaf}\;\Varid{f})\mathbin{:}\Varid{b})\mathrel{\wedge}{}\<[E]%
+\\
+\>[3]{}\hsindent{29}{}\<[32]%
+\>[32]{}\Varid{evalBranch}\;((\Varid{peelLeaf}\;\Varid{t})\mathbin{:}\Varid{b}){}\<[E]%
+\\
+\>[B]{}\hsindent{3}{}\<[3]%
+\>[3]{}\mid (\Varid{isLeaf}\;\Varid{f})\mathrel{=}(\Varid{evalTree}\;\Varid{t}\;\Varid{b})\mathrel{\wedge}(\Varid{evalBranch}\;((\Varid{peelLeaf}\;\Varid{f})\mathbin{:}\Varid{b})){}\<[E]%
+\\
+\>[B]{}\hsindent{3}{}\<[3]%
+\>[3]{}\mid (\Varid{isLeaf}\;\Varid{t})\mathrel{=}(\Varid{evalTree}\;\Varid{f}\;\Varid{b})\mathrel{\wedge}(\Varid{evalBranch}\;((\Varid{peelLeaf}\;\Varid{t})\mathbin{:}\Varid{b})){}\<[E]%
+\\
+\>[B]{}\hsindent{3}{}\<[3]%
+\>[3]{}\mid \Varid{otherwise}\mathrel{=}(\Varid{evalTree}\;\Varid{f}\;\Varid{b})\mathrel{\wedge}(\Varid{evalTree}\;\Varid{t}\;\Varid{b}){}\<[E]%
+\\
+\>[B]{}\Varid{evalTree}\;(\Conid{Leaf}\;(\Varid{c},\Varid{n}))\;\Varid{b}\mathrel{=}\Varid{evalBranch}\;((\Varid{c},\Varid{n})\mathbin{:}\Varid{b}){}\<[E]%
+\ColumnHook
+\end{hscode}\resethooks
+
+The functions digRight and digLeft are very simple and will be declared shortly. They return either the right or left child (respectively) of an FTree. 
+
+peelLeaf is simply used to access the (Char, Bool) once we reach it in the FTree.\\
+
+And at last, we have reached the final piece of the puzzle. The upcoming function evalBranch, which is called from evalTree for each Branch it generates, takes as input a Branch, and returns a Bool signifying if it found a contradiction.
+
+Because True is returned when a contradiction is found ($p$ and $\neg p$ existing in the same Branch, for any p,) The original function evalForm returns TRUE if the NEGATION of the original formula is valid. This may seem counterintuitive, but changing these return values so deep in the problem results in a cluttering of evalTree's logic. If we wish, we can make adjustments at a higher level.
+
+Stated formally,
+\begin{center}
+($\forall$ f: Form (evalForm (f) = True $\iff$ isValid($\neg$f))) 
+\end{center}
+
+\begin{hscode}\SaveRestoreHook
+\column{B}{@{}>{\hspre}l<{\hspost}@{}}%
+\column{3}{@{}>{\hspre}l<{\hspost}@{}}%
+\column{13}{@{}>{\hspre}l<{\hspost}@{}}%
+\column{E}{@{}>{\hspre}l<{\hspost}@{}}%
+\>[B]{}\Varid{evalBranch}\mathbin{::}\Conid{Branch}\to \Conid{Bool}{}\<[E]%
+\\
+\>[B]{}\Varid{evalBranch}\;[\mskip1.5mu \mskip1.5mu]\mathrel{=}\Conid{False}{}\<[E]%
+\\
+\>[B]{}\Varid{evalBranch}\;(\Varid{x}\mathbin{:}\Varid{xs})\mathrel{=}\mathbf{case}\;\Varid{lookup}\;(\Varid{fst}\;\Varid{x})\;\Varid{xs}\;\mathbf{of}{}\<[E]%
+\\
+\>[B]{}\hsindent{3}{}\<[3]%
+\>[3]{}\Conid{Nothing}\to \Varid{evalBranch}\;\Varid{xs}{}\<[E]%
+\\
+\>[B]{}\hsindent{3}{}\<[3]%
+\>[3]{}\Conid{Just}\;\Varid{b}\to \mathbf{if}\;\Varid{b}\equiv (\Varid{snd}\;\Varid{x}){}\<[E]%
+\\
+\>[3]{}\hsindent{10}{}\<[13]%
+\>[13]{}\mathbf{then}\;\Varid{evalBranch}\;\Varid{xs}{}\<[E]%
+\\
+\>[3]{}\hsindent{10}{}\<[13]%
+\>[13]{}\mathbf{else}\;\Conid{True}{}\<[E]%
+\ColumnHook
+\end{hscode}\resethooks
+
+The following are definitions for each of the auxilliary functions used in evalTree.
+The dig functions as well as peelLeaf are defined for every instance of FTree simply for completion's sake, a dig will never be called for a Leaf and peelLeaf will never be called for a Split or a Pair (see evalTree for clarification).
+
+\begin{hscode}\SaveRestoreHook
+\column{B}{@{}>{\hspre}l<{\hspost}@{}}%
+\column{E}{@{}>{\hspre}l<{\hspost}@{}}%
+\>[B]{}\Varid{digLeft}\mathbin{::}\Conid{FTree}\to \Conid{FTree}{}\<[E]%
+\\
+\>[B]{}\Varid{digLeft}\;(\Conid{Split}\;\Varid{f}\;\Varid{t})\mathrel{=}\Varid{f}{}\<[E]%
+\\
+\>[B]{}\Varid{digLeft}\;(\Conid{Pair}\;\Varid{f}\;\Varid{t})\mathrel{=}\Varid{f}{}\<[E]%
+\\
+\>[B]{}\Varid{digLeft}\;(\Conid{Leaf}\;\Varid{l})\mathrel{=}\Conid{Leaf}\;\Varid{l}{}\<[E]%
+\\[\blanklineskip]%
+\>[B]{}\Varid{digRight}\mathbin{::}\Conid{FTree}\to \Conid{FTree}{}\<[E]%
+\\
+\>[B]{}\Varid{digRight}\;(\Conid{Split}\;\Varid{f}\;\Varid{t})\mathrel{=}\Varid{t}{}\<[E]%
+\\
+\>[B]{}\Varid{digRight}\;(\Conid{Pair}\;\Varid{f}\;\Varid{t})\mathrel{=}\Varid{t}{}\<[E]%
+\\
+\>[B]{}\Varid{digRight}\;(\Conid{Leaf}\;\Varid{l})\mathrel{=}\Conid{Leaf}\;\Varid{l}{}\<[E]%
+\\[\blanklineskip]%
+\>[B]{}\Varid{peelLeaf}\mathbin{::}\Conid{FTree}\to (\Conid{Char},\Conid{Bool}){}\<[E]%
+\\
+\>[B]{}\Varid{peelLeaf}\;(\Conid{Leaf}\;\Varid{l})\mathrel{=}\Varid{l}{}\<[E]%
+\\[\blanklineskip]%
+\>[B]{}\Varid{isPair}\mathbin{::}\Conid{FTree}\to \Conid{Bool}{}\<[E]%
+\\
+\>[B]{}\Varid{isPair}\;(\Conid{Pair}\;\anonymous \;\anonymous )\mathrel{=}\Conid{True}{}\<[E]%
+\\
+\>[B]{}\Varid{isPair}\;\anonymous \mathrel{=}\Conid{False}{}\<[E]%
+\\[\blanklineskip]%
+\>[B]{}\Varid{isSplit}\mathbin{::}\Conid{FTree}\to \Conid{Bool}{}\<[E]%
+\\
+\>[B]{}\Varid{isSplit}\;(\Conid{Split}\;\anonymous \;\anonymous )\mathrel{=}\Conid{True}{}\<[E]%
+\\
+\>[B]{}\Varid{isSplit}\;\anonymous \mathrel{=}\Conid{False}{}\<[E]%
+\\[\blanklineskip]%
+\>[B]{}\Varid{isLeaf}\mathbin{::}\Conid{FTree}\to \Conid{Bool}{}\<[E]%
+\\
+\>[B]{}\Varid{isLeaf}\;(\Conid{Leaf}\;\anonymous )\mathrel{=}\Conid{True}{}\<[E]%
+\\
+\>[B]{}\Varid{isLeaf}\;\anonymous \mathrel{=}\Conid{False}{}\<[E]%
+\ColumnHook
+\end{hscode}\resethooks
+
+\subsection{Interfacing with Tableaux}
+
+By this point we have constructed enough to (rather ruggedly) determine the validity of propositional forumlas.
+To do so, load the module in GHCI (":l Tableaux.lhs") and call evalForm for any of the previously defined Form elements (again, feel free to build your own using the Form constructors).
+
+\subsection{Extending to Satisfiability}
+
+The Tableaux method can be used to derive satisfiability as well as validity. The way this can be accomplished is rather straightforward. If every branch contains a contradiction, the negation of the formula is valid. If no branches contain a contradiction, the formula itself is satisfiable.
+
+The first function we define in this section resolves the previously mentioned counterintuition of evalForm.
+It is very simple, and should be self explanatory.
+
+\begin{hscode}\SaveRestoreHook
+\column{B}{@{}>{\hspre}l<{\hspost}@{}}%
+\column{E}{@{}>{\hspre}l<{\hspost}@{}}%
+\>[B]{}\Varid{isValid}\mathbin{::}\Conid{Form}\to \Conid{Bool}{}\<[E]%
+\\
+\>[B]{}\Varid{isValid}\;\Varid{f}\mathrel{=}\Varid{evalForm}\;(\Conid{Not}\;\Varid{f}){}\<[E]%
+\ColumnHook
+\end{hscode}\resethooks
+
+This next function, when fed a formula, will return True if it is satisfiable. By extension, a return value of False indicates that the formula is a contradiction.
+
+\begin{hscode}\SaveRestoreHook
+\column{B}{@{}>{\hspre}l<{\hspost}@{}}%
+\column{E}{@{}>{\hspre}l<{\hspost}@{}}%
+\>[B]{}\Varid{isSat}\mathbin{::}\Conid{Form}\to \Conid{Bool}{}\<[E]%
+\\
+\>[B]{}\Varid{isSat}\;\Varid{f}\mathrel{=}\Varid{evalTreeSat}\;(\Varid{genFTree}\;\Varid{f})\;[\mskip1.5mu \mskip1.5mu]{}\<[E]%
+\ColumnHook
+\end{hscode}\resethooks
+
+Note that this function is identical to our original evalForm, with the exception that evalTree has been replaced by some new function 'evalTreeSat'. This function will be very close to evalTree, with a few differences.
+We will also need to make adjustments to evalBranch.
+
+There are two differences between evalTreeSat and evalTree. The first is that we now use evalBranchSat (defined below) instead of evalBranch. The second is that in the instance where we have a Pair followed by two Pairs we now combine all the cases with AND instead of OR. The reason for this is that in evalTree a contradiction in any of the subcases was enough to satisfy the requirements, but in evalTreeSat EVERY subcase must be free of contradictions.
+
+\begin{hscode}\SaveRestoreHook
+\column{B}{@{}>{\hspre}l<{\hspost}@{}}%
+\column{3}{@{}>{\hspre}l<{\hspost}@{}}%
+\column{9}{@{}>{\hspre}l<{\hspost}@{}}%
+\column{32}{@{}>{\hspre}l<{\hspost}@{}}%
+\column{34}{@{}>{\hspre}l<{\hspost}@{}}%
+\column{E}{@{}>{\hspre}l<{\hspost}@{}}%
+\>[B]{}\Varid{evalTreeSat}\mathbin{::}\Conid{FTree}\to \Conid{Branch}\to \Conid{Bool}{}\<[E]%
+\\
+\>[B]{}\Varid{evalTreeSat}\;(\Conid{Pair}\;\Varid{f}\;\Varid{t})\;\Varid{b}{}\<[E]%
+\\
+\>[B]{}\hsindent{3}{}\<[3]%
+\>[3]{}\mid (\Varid{isLeaf}\;\Varid{f})\mathrel{\wedge}(\Varid{isLeaf}\;\Varid{t})\mathrel{=}\Varid{evalBranchSat}\;((\Varid{peelLeaf}\;\Varid{f})\mathbin{:}(\Varid{peelLeaf}\;\Varid{t})\mathbin{:}\Varid{b}){}\<[E]%
+\\
+\>[B]{}\hsindent{3}{}\<[3]%
+\>[3]{}\mid (\Varid{isLeaf}\;\Varid{f})\mathrel{=}\Varid{evalTreeSat}\;\Varid{t}\;((\Varid{peelLeaf}\;\Varid{f})\mathbin{:}\Varid{b}){}\<[E]%
+\\
+\>[B]{}\hsindent{3}{}\<[3]%
+\>[3]{}\mid (\Varid{isLeaf}\;\Varid{t})\mathrel{=}\Varid{evalTreeSat}\;\Varid{f}\;((\Varid{peelLeaf}\;\Varid{t})\mathbin{:}\Varid{b}){}\<[E]%
+\\
+\>[B]{}\hsindent{3}{}\<[3]%
+\>[3]{}\mid (\Varid{isPair}\;\Varid{f})\mathrel{\wedge}(\Varid{isPair}\;\Varid{t})\mathrel{=}(\Varid{evalTreeSat}\;(\Conid{Pair}\;(\Varid{digLeft}\;\Varid{f})\;(\Varid{digLeft}\;\Varid{t}))\;\Varid{b})\mathrel{\wedge}{}\<[E]%
+\\
+\>[3]{}\hsindent{29}{}\<[32]%
+\>[32]{}(\Varid{evalTreeSat}\;(\Conid{Pair}\;(\Varid{digLeft}\;\Varid{f})\;(\Varid{digRight}\;\Varid{t}))\;\Varid{b})\mathrel{\wedge}{}\<[E]%
+\\
+\>[3]{}\hsindent{29}{}\<[32]%
+\>[32]{}(\Varid{evalTreeSat}\;(\Conid{Pair}\;(\Varid{digRight}\;\Varid{f})\;(\Varid{digLeft}\;\Varid{t}))\;\Varid{b})\mathrel{\wedge}{}\<[E]%
+\\
+\>[3]{}\hsindent{29}{}\<[32]%
+\>[32]{}(\Varid{evalTreeSat}\;(\Conid{Pair}\;(\Varid{digRight}\;\Varid{f})\;(\Varid{digRight}\;\Varid{t}))\;\Varid{b}){}\<[E]%
+\\
+\>[B]{}\hsindent{3}{}\<[3]%
+\>[3]{}\mid (\Varid{isSplit}\;\Varid{f})\mathrel{\wedge}(\Varid{isSplit}\;\Varid{t})\mathrel{=}(\Varid{evalTreeSat}\;(\Conid{Pair}\;(\Varid{digLeft}\;\Varid{f})\;(\Varid{digLeft}\;\Varid{t}))\;\Varid{b})\mathrel{\wedge}{}\<[E]%
+\\
+\>[3]{}\hsindent{31}{}\<[34]%
+\>[34]{}(\Varid{evalTreeSat}\;(\Conid{Pair}\;(\Varid{digLeft}\;\Varid{f})\;(\Varid{digRight}\;\Varid{t}))\;\Varid{b})\mathrel{\wedge}{}\<[E]%
+\\
+\>[3]{}\hsindent{31}{}\<[34]%
+\>[34]{}(\Varid{evalTreeSat}\;(\Conid{Pair}\;(\Varid{digRight}\;\Varid{f})\;(\Varid{digLeft}\;\Varid{t}))\;\Varid{b})\mathrel{\wedge}{}\<[E]%
+\\
+\>[3]{}\hsindent{31}{}\<[34]%
+\>[34]{}(\Varid{evalTreeSat}\;(\Conid{Pair}\;(\Varid{digRight}\;\Varid{f})\;(\Varid{digRight}\;\Varid{t}))\;\Varid{b}){}\<[E]%
+\\
+\>[B]{}\hsindent{3}{}\<[3]%
+\>[3]{}\mid (\Varid{isPair}\;\Varid{f})\mathrel{=}(\Varid{evalTreeSat}\;(\Conid{Pair}\;\Varid{f}\;(\Varid{digLeft}\;\Varid{t}))\;\Varid{b})\mathrel{\wedge}(\Varid{evalTreeSat}\;(\Conid{Pair}\;\Varid{f}\;(\Varid{digRight}\;\Varid{t}))\;\Varid{b}){}\<[E]%
+\\
+\>[B]{}\hsindent{3}{}\<[3]%
+\>[3]{}\mid \Varid{otherwise}\mathrel{=}(\Varid{evalTreeSat}\;(\Conid{Pair}\;\Varid{t}\;(\Varid{digLeft}\;\Varid{f}))\;\Varid{b})\mathrel{\wedge}(\Varid{evalTreeSat}\;(\Conid{Pair}\;\Varid{t}\;(\Varid{digRight}\;\Varid{f}))\;\Varid{b}){}\<[E]%
+\\
+\>[B]{}\Varid{evalTreeSat}\;(\Conid{Split}\;\Varid{f}\;\Varid{t})\;\Varid{b}{}\<[E]%
+\\
+\>[B]{}\hsindent{9}{}\<[9]%
+\>[9]{}\mid (\Varid{isLeaf}\;\Varid{f})\mathrel{\wedge}(\Varid{isLeaf}\;\Varid{t})\mathrel{=}\Varid{evalBranchSat}\;((\Varid{peelLeaf}\;\Varid{f})\mathbin{:}\Varid{b})\mathrel{\wedge}\Varid{evalBranchSat}\;((\Varid{peelLeaf}\;\Varid{t})\mathbin{:}\Varid{b}){}\<[E]%
+\\
+\>[B]{}\hsindent{9}{}\<[9]%
+\>[9]{}\mid (\Varid{isLeaf}\;\Varid{f})\mathrel{=}(\Varid{evalTreeSat}\;\Varid{t}\;\Varid{b})\mathrel{\wedge}(\Varid{evalBranchSat}\;((\Varid{peelLeaf}\;\Varid{f})\mathbin{:}\Varid{b})){}\<[E]%
+\\
+\>[B]{}\hsindent{9}{}\<[9]%
+\>[9]{}\mid (\Varid{isLeaf}\;\Varid{t})\mathrel{=}(\Varid{evalTreeSat}\;\Varid{f}\;\Varid{b})\mathrel{\wedge}(\Varid{evalBranchSat}\;((\Varid{peelLeaf}\;\Varid{t})\mathbin{:}\Varid{b})){}\<[E]%
+\\
+\>[B]{}\hsindent{9}{}\<[9]%
+\>[9]{}\mid \Varid{otherwise}\mathrel{=}(\Varid{evalTreeSat}\;\Varid{f}\;\Varid{b})\mathrel{\wedge}(\Varid{evalTreeSat}\;\Varid{t}\;\Varid{b}){}\<[E]%
+\\
+\>[B]{}\Varid{evalTreeSat}\;(\Conid{Leaf}\;(\Varid{c},\Varid{n}))\;\Varid{b}\mathrel{=}\Varid{evalBranchSat}\;((\Varid{c},\Varid{n})\mathbin{:}\Varid{b}){}\<[E]%
+\ColumnHook
+\end{hscode}\resethooks
+
+Lastly, you will find that the only difference in our new implementation of evalBranch is the replacement of False for True on the empty list pattern and the replacement of True for False when a contradiction is found.
+This will return True if there are no contradictions in the Branch.
+Paired with our changes to evalTreeSat, isSat can now determine whether a formula is satisfiable.
+
+\begin{hscode}\SaveRestoreHook
+\column{B}{@{}>{\hspre}l<{\hspost}@{}}%
+\column{3}{@{}>{\hspre}l<{\hspost}@{}}%
+\column{13}{@{}>{\hspre}l<{\hspost}@{}}%
+\column{E}{@{}>{\hspre}l<{\hspost}@{}}%
+\>[B]{}\Varid{evalBranchSat}\mathbin{::}\Conid{Branch}\to \Conid{Bool}{}\<[E]%
+\\
+\>[B]{}\Varid{evalBranchSat}\;[\mskip1.5mu \mskip1.5mu]\mathrel{=}\Conid{True}{}\<[E]%
+\\
+\>[B]{}\Varid{evalBranchSat}\;(\Varid{x}\mathbin{:}\Varid{xs})\mathrel{=}\mathbf{case}\;\Varid{lookup}\;(\Varid{fst}\;\Varid{x})\;\Varid{xs}\;\mathbf{of}{}\<[E]%
+\\
+\>[B]{}\hsindent{3}{}\<[3]%
+\>[3]{}\Conid{Nothing}\to \Varid{evalBranchSat}\;\Varid{xs}{}\<[E]%
+\\
+\>[B]{}\hsindent{3}{}\<[3]%
+\>[3]{}\Conid{Just}\;\Varid{b}\to \mathbf{if}\;\Varid{b}\equiv (\Varid{snd}\;\Varid{x}){}\<[E]%
+\\
+\>[3]{}\hsindent{10}{}\<[13]%
+\>[13]{}\mathbf{then}\;\Varid{evalBranchSat}\;\Varid{xs}{}\<[E]%
+\\
+\>[3]{}\hsindent{10}{}\<[13]%
+\>[13]{}\mathbf{else}\;\Conid{False}{}\<[E]%
+\ColumnHook
+\end{hscode}\resethooks
+
+We can now determine whether a propositional formula is valid, satisfiable, or invalid.\\\\
+
+Enjoy.
+
+\end{document}
